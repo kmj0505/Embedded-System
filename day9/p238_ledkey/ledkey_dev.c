@@ -72,9 +72,7 @@ static void ledkey_free(void)
 void led_write(unsigned char data)
 {
 	int i;
-	for(i = 0; i < ARRAY_SIZE(led); i++){
-//		gpio_direction_output(led[i], (data >> i ) & 0x01);
-//		gpio_set_value(led[i], (data >> i ) & 0x01);					   
+	for(i = 0; i < ARRAY_SIZE(led); i++){			   
 		gpio_direction_output(led[i], 0);
 		gpio_set_value(led[i], (data >> i ) & 0x01);
 	}
@@ -93,17 +91,7 @@ void key_read(char * key_data)
 		temp = gpio_get_value(key[i]) << i;
 		data |= temp;
 	}									
-/*	
-	for(i=3;i>=0;i--)
-	{
-		gpio_direction_input(led[i]); //error led all turn off
-		temp = gpio_get_value(led[i]);
-		data |= temp;
-		if(i==0)
-			break;
-		data <<= 1;  //data <<= 1;
-	}
-*/
+	
 #if DEBUG
 	printk("#### %s, data = %ld\n", __FUNCTION__, data);
 #endif
@@ -131,7 +119,6 @@ static ssize_t ledkeydev_read(struct file *filp, char *buf, size_t count, loff_t
 	int ret;
 	printk("ledkeydev read -> buf : %08X, count : %08X \n", (unsigned int)buf, count);
 	key_read(&kbuf);
-//	put_user(kbuf,buf);
 	ret = copy_to_user(buf, &kbuf, count);
 	if(ret < 0)
 		return -ENOMEM;
@@ -142,9 +129,7 @@ static ssize_t ledkeydev_write(struct file *filp, const char *buf, size_t count,
 	char kbuf;
 	int ret;
 	printk("ledkeydev write -> buf : %08X, count : %08X \n", (unsigned int)buf, count);
-//	get_user(kbuf, buf);
 	ret = copy_from_user(&kbuf, buf, count);
-//	led_write(*buf);
 	if(ret < 0)
 		return -ENOMEM;
 	led_write(kbuf);
@@ -188,7 +173,6 @@ static void ledkeydev_exit(void)
 {
 	printk("ledkeydev ledkeydev_exit \n");
 	unregister_chrdev(LED_DEV_MAJOR, LED_DEV_NAME);
-//	led_write(0);
 	ledkey_free();
 }
 
