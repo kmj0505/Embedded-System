@@ -73,10 +73,7 @@ void led_write(char * led_data)
 {
 	int i;
 	for(i = 0; i < ARRAY_SIZE(led); i++){
-//		gpio_direction_output(led[i], (data >> i ) & 0x01);
-//  	gpio_set_value(led[i], (data >> i ) & 0x01);
   		gpio_direction_output(led[i], 0);
-//    	gpio_set_value(led[i], (led_data >> i ) & 0x01);
       	gpio_set_value(led[i], led_data[i]);
 #if DEBUG
 	printk("#### %s, data = %d\n", __FUNCTION__, led_data[i]);
@@ -86,31 +83,15 @@ void led_write(char * led_data)
 void key_read(char * key_data)
 {
 	int i;
-//	unsigned long data=0;
-//	unsigned long temp;
 	for(i=0;i<8;i++)
 	{
   		gpio_direction_input(key[i]); //error led all turn off
-//		temp = gpio_get_value(key[i]) << i;
 		key_data[i] = gpio_get_value(key[i]);
 #if DEBUG
 	printk("#### %s, data = %d\n", __FUNCTION__, key_data[i]);
 #endif
-//		data |= temp;
-// 		data  = data | temp;
 	}
-/*	
-	for(i=3;i>=0;i--)
-	{
-  		gpio_direction_input(led[i]); //error led all turn off
-		temp = gpio_get_value(led[i]);
-		data |= temp;
-		if(i==0)
-			break;
-		data <<= 1;  //data <<= 1;
-	}
-*/
-//	*key_data = data;
+
 	return;
 }
 
@@ -134,41 +115,30 @@ loff_t ledkeydev_llseek (struct file *filp, loff_t off, int whence )
 ssize_t ledkeydev_read(struct file *filp, char *buf, size_t count, loff_t *f_pos)
 {
 	char kbuf[8];
-//	int ret;
 	int i;
     printk( "ledkeydev read -> buf : %08X, count : %08X \n", (unsigned int)buf, count );
-//	led_read(&kbuf);
 	key_read(kbuf);     
 	for (i = 0; i < count ; i++){
 		put_user(kbuf[i], buf);
 		buf++;
 	}
-//	put_user(kbuf,buf);
-//	ret=copy_to_user(buf,&kbuf,count);
-//	if(ret < 0)
-//		return -ENOMEM;
+
     return count;
 }
 
 ssize_t ledkeydev_write (struct file *filp, const char *buf, size_t count, loff_t *f_pos)
 {
 	char kbuf[4];
-//	int ret;
 	int i;
     printk( "ledkeydev write -> buf : %08X, count : %08X \n", (unsigned int)buf, count );
 	for (i = 0; i < count; i++){	
-//		get_user(kbuf[i],&buf[i]);
 		get_user(*(kbuf+i),buf);
 		buf++;
 	}
-//	ret=copy_from_user(kbuf,buf,count);
-//	if(ret < 0)
-//		return -ENOMEM;
 	led_write(kbuf);
     return count;
 }
 
-//int ledkeydev_ioctl (struct inode *inode, struct file *filp, unsigned int cmd, unsigned long arg)
 static long ledkeydev_ioctl (struct file *filp, unsigned int cmd, unsigned long arg)
 {
     printk( "ledkeydev ioctl -> cmd : %08X, arg : %08X \n", cmd, (unsigned int)arg );
